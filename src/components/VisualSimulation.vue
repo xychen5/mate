@@ -7,6 +7,7 @@
  
 <script>
 import * as THREE from 'three'
+import { GeometryUtils } from 'three';
  
 export default {
   name: 'THREETest',
@@ -19,7 +20,8 @@ export default {
       scene2: null,
       renderer2: null,
       mesh2: null,
-      mesh3: null
+      fixedPlatform: null,
+      motionPlatform: null
     }
   },
   methods: {
@@ -27,7 +29,9 @@ export default {
       let container = document.getElementById('container');
 
       this.camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.01, 1000);
-      this.camera.position.z = 1;
+      console.log(window.innerHeight, window.innerWidth);
+      this.camera.position.set(0.375, 0.75, 0.75);  //设置相机位置
+      this.camera.lookAt(new THREE.Vector3(0, 0, 0)); //设置相机的朝向
 
       this.scene = new THREE.Scene();
 
@@ -77,33 +81,50 @@ export default {
 
       let geometry3 = new THREE.ExtrudeGeometry( shape3, extrudeSettings );
       let material3 = new THREE.MeshNormalMaterial();
-      this.mesh3 = new THREE.Mesh( geometry3, material3);
-      this.mesh3.position.set(0, 0.1, 0)  //设置动平台的位置
+      this.fixedPlatform = new THREE.Mesh( geometry3, material3);
+      this.fixedPlatform.position.set(0, 0, 0);  //设定平台的位置
+      this.fixedPlatform.rotateX(Math.PI / 2);
+      // this.fixedPlatform.rotateZ(Math.PI / 2);
+
+      this.motionPlatform = new THREE.Mesh(geometry3, material3); 
+      this.motionPlatform.position.set(0, 0.2, 0);  //设置动平台位置
+      this.motionPlatform.rotateX(Math.PI / 2);
 
       this.scene.add(new THREE.AxesHelper(10))
       // this.scene.add(this.mesh);
       // this.scene.add(this.mesh2);
-      this.scene.add(this.mesh3);
+      this.scene.add(this.fixedPlatform);
+      this.scene.add(this.motionPlatform);
 
       this.renderer = new THREE.WebGLRenderer({antialias: true});
       this.renderer.setSize(container.clientWidth, container.clientHeight);
       container.appendChild(this.renderer.domElement)
 
     },
+
     animate: function() {
       requestAnimationFrame(this.animate);
-      this.mesh3.rotation.x += 0.02;
-      this.mesh3.rotation.y += 0.01;
+      // this.fixedPlatform.rotation.x += 0.02;
+      // this.fixedPlatform.rotation.y += 0.01;
       this.mesh2.rotation.x += 0.02;
       this.mesh2.rotation.y += 0.01;
       this.mesh.rotation.x += 0.02;
       this.mesh.rotation.y += 0.01;
       this.renderer.render(this.scene, this.camera);
-    }
+    },
+
+    //更新动平台位置的设计思路:
+    // 1, 输入的是反解后的每个Actuator(电动缸)的运动量
+    // 2, 提出问题,反解后得到的各个电动缸的运动量,这个作为平台的重新绘制很麻烦,电动缸不总是垂直于地面的
+    // 3, 思考方式: 使用可以控制其他obj的three.js的对象,也就是骨骼,尝试使用骨骼构建,然后控制骨骼的长度
+    // updateMotionPlatform(inverseResolutionData){
+      
+    // }
   },
   mounted() {
     this.init();
-    this.animate()
+    this.animate();
+    console.log(this.fixedPlatform.vertices);
   }
 }
 </script>
