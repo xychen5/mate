@@ -3,7 +3,7 @@
       <div id="container"></div>
       <div id='log'>
         <p> {{ tmp }} </p>
-        <p> {{ msg }} </p>
+        <p> {{ height }} </p>
       </div>
     </div>
 </template>
@@ -49,6 +49,7 @@ class Leg {
     }
     this.createGeometry()
     this.object.geometry = this.geometry
+    console.log("update!")
   }
 }
 
@@ -67,7 +68,8 @@ export default {
       leg2: null,
       leg3: null,
       tmp: "for tmp",
-      msg: null
+      msg: null,
+      height: 0
     }
   },
   methods: {
@@ -105,15 +107,15 @@ export default {
       };
 
       //构建三角形的动平台和定平台
-      const LR_LENGTH = 0.2
-      const FB_LENGTH = 0.2
-      const CT = 0.3
+      this.LR_LENGTH = 0.2
+      this.FB_LENGTH = 0.2
+      this.CT = 0.3
       
       var trianglePoints = new Array(
-        new THREE.Vector2(0, FB_LENGTH/2),
-        new THREE.Vector2(- LR_LENGTH/2, - FB_LENGTH/2),
-        new THREE.Vector2(LR_LENGTH/2, - FB_LENGTH/2),
-        new THREE.Vector2(0, FB_LENGTH/2)
+        new THREE.Vector2(0, this.FB_LENGTH/2),
+        new THREE.Vector2(- this.LR_LENGTH/2, - this.FB_LENGTH/2),
+        new THREE.Vector2(this.LR_LENGTH/2, - this.FB_LENGTH/2),
+        new THREE.Vector2(0, this.FB_LENGTH/2)
       )
       var shape3 = new THREE.Shape(trianglePoints)
 
@@ -132,10 +134,10 @@ export default {
 
       //构建柱形的支撑杆
       this.leg1 = new Leg({
-        startPoint: new THREE.Vector3(0, 0, FB_LENGTH/2),
-        endPoint: new THREE.Vector3(0, CT, FB_LENGTH/2)
+        startPoint: new THREE.Vector3(0, 0, this.FB_LENGTH/2),
+        endPoint: new THREE.Vector3(0, this.CT, this.FB_LENGTH/2)
       })
-      // this.leg1 = this.legConstructor(0, 0, FB_LENGTH/2, 0, CT, FB_LENGTH/2);
+      // this.leg1 = this.legConstructor(0, 0, this.FB_LENGTH/2, 0, this.CT, this.FB_LENGTH/2);
       
       this.scene.add(this.leg1.object); 
 
@@ -196,16 +198,21 @@ export default {
   },
   //设定定时器，定时获取后端的动平台的位置和姿态
   beforeMount(){
-    const getMotionPlatformInfoTimer = setInterval(() => {
-      this.getMessage()
-    }, 1000)
+    
   },
 
   mounted() {
     this.init();
+    const getMotionPlatformInfoTimer = setInterval(() => {
+      // this.getMessage()
+      this.height += 0.01
+      this.leg1.updateLeg(new THREE.Vector3(0, 0, this.FB_LENGTH/2),
+                          new THREE.Vector3(0, this.height, this.FB_LENGTH/2))
+    }, 1000);
     this.animate();
     console.log(this.fixedPlatform.vertices);
-  }
+  },
+  
 }
 </script>
 <style scoped>
