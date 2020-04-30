@@ -179,7 +179,7 @@ export default {
       const path = 'http://localhost:5000/io'
       axios.get(path)
         .then((res) => {
-          this.msg += res.data
+          this.msg = res.data
         })
         .catch((error) => {
           // eslint-disable-next-line
@@ -204,7 +204,7 @@ export default {
   mounted() {
     this.init();
     const getMotionPlatformInfoTimer = setInterval(() => {
-      // this.getMessage()
+      this.getMessage()
       this.height += 0.01
       this.leg1.updateLeg(new THREE.Vector3(0, 0, this.FB_LENGTH/2),
                           new THREE.Vector3(0, this.height, this.FB_LENGTH/2))
