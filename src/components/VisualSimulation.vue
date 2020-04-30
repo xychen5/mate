@@ -49,9 +49,10 @@ class Leg {
     }
     this.createGeometry()
     this.object.geometry = this.geometry
-    console.log("update!")
+    console.log("update leg!")
   }
 }
+
 
 
 export default {
@@ -69,6 +70,7 @@ export default {
       leg3: null,
       tmp: "for tmp",
       msg: null,
+      motionPlatformInfo: null,
       height: 0
     }
   },
@@ -107,9 +109,9 @@ export default {
       };
 
       //构建三角形的动平台和定平台
-      this.LR_LENGTH = 0.2
-      this.FB_LENGTH = 0.2
-      this.CT = 0.3
+      this.LR_LENGTH = 0.28
+      this.FB_LENGTH = 0.28
+      this.CT = 0.2175
       
       var trianglePoints = new Array(
         new THREE.Vector2(0, this.FB_LENGTH/2),
@@ -127,7 +129,7 @@ export default {
       // this.fixedPlatform.rotateZ(Math.PI / 2);
 
       this.motionPlatform = new THREE.Mesh(geometry3, material3); 
-      this.motionPlatform.position.set(0, 0.3, 0);  //设置动平台位置
+      this.motionPlatform.position.set(0, this.CT, 0);  //设置动平台位置
       // this.motionPlatform.lookAt(new THREE.Vector3(0,0,0)) //根据动平台的朝向确定其姿态
       this.motionPlatform.rotateX(Math.PI / 2);
       // this.motionPlatform.rotateY(Math.PI / 2)
@@ -136,13 +138,21 @@ export default {
       this.leg1 = new Leg({
         startPoint: new THREE.Vector3(0, 0, this.FB_LENGTH/2),
         endPoint: new THREE.Vector3(0, this.CT, this.FB_LENGTH/2)
-      })
-      // this.leg1 = this.legConstructor(0, 0, this.FB_LENGTH/2, 0, this.CT, this.FB_LENGTH/2);
-      
+      });
+      this.leg2 = new Leg({
+        startPoint: new THREE.Vector3(this.LR_LENGTH/2, 0, -this.FB_LENGTH/2),
+        endPoint: new THREE.Vector3(this.LR_LENGTH/2, this.CT, -this.FB_LENGTH/2)
+      });
+      this.leg3 = new Leg({
+        startPoint: new THREE.Vector3(-this.LR_LENGTH/2, 0, -this.FB_LENGTH/2),
+        endPoint: new THREE.Vector3(-this.LR_LENGTH/2, this.CT, -this.FB_LENGTH/2)
+      });
       this.scene.add(this.leg1.object); 
+      this.scene.add(this.leg2.object);
+      this.scene.add(this.leg3.object);
 
       this.scene.add(new THREE.AxesHelper(10))
-      this.scene.add(this.mesh);
+      // this.scene.add(this.mesh);
       // this.scene.add(this.mesh2);
       this.scene.add(this.fixedPlatform);
       this.scene.add(this.motionPlatform);
@@ -175,11 +185,11 @@ export default {
       
     },
 
-    getMessage () {
-      const path = 'http://localhost:5000/io'
+    getMotionPlatformInof () {
+      const path = 'http://localhost:5000/visualize'
       axios.get(path)
         .then((res) => {
-          this.msg = res.data
+          this.motionPlatformInfo = res.data
         })
         .catch((error) => {
           // eslint-disable-next-line
@@ -204,13 +214,43 @@ export default {
   mounted() {
     this.init();
     const getMotionPlatformInfoTimer = setInterval(() => {
-      this.getMessage()
+      this.getMotionPlatformInof()
       this.height += 0.01
+      // for (var i = 0; i < this.motionPlatformInfo.pitch.length; i++){
+        
+      // }
+      //获取数据的个数，这里我们总是取最顶端的那个数据作为更新的数据
+      var dataNum = this.motionPlatformInfo.xa1.length 
+      console.log(this.motionPlatformInfo.xa1[dataNum - 1]);
+      //由于在前端，实现的动平台的前方面向为z轴，左右为x轴，上下为y轴，后端的前为x，左右为y，上下为z，同时前端坐标的尺度和后端不同
+      //前端和后端大小的比例为： 0.28 : 560mm，后端的x为前端的z，后端的y为前端的x，后端的z为前端的y
+      //动平台3个顶点，a1, a2, a3分别为前，左后，右后，且后端的坐标系建立在动平台上，前端建立在动平台上所以有以下坐标转化
+      var scaleToFrontEnd = 0.28 / 560
+      var xa1 = this.motionPlatformInfo.ya1[dataNum - 1] * scaleToFrontEnd
+      var ya1 = this.motionPlatformInfo.za1[dataNum - 1] * scaleToFrontEnd + this.CT
+      var za1 = this.motionPlatformInfo.xa1[dataNum - 1] * scaleToFrontEnd
+      var xa2 = this.motionPlatformInfo.ya2[dataNum - 1] * scaleToFrontEnd
+      var ya2 = this.motionPlatformInfo.za2[dataNum - 1] * scaleToFrontEnd + this.CT
+      var za2 = this.motionPlatformInfo.xa2[dataNum - 1] * scaleToFrontEnd
+      var xa3 = this.motionPlatformInfo.ya3[dataNum - 1] * scaleToFrontEnd
+      var ya3 = this.motionPlatformInfo.za3[dataNum - 1] * scaleToFrontEnd + this.CT
+      var za3 = this.motionPlatformInfo.xa3[dataNum - 1] * scaleToFrontEnd
+      console.log(xa1, ya1, za1);
+      //根据后端给出的坐标更新3个支撑杆
       this.leg1.updateLeg(new THREE.Vector3(0, 0, this.FB_LENGTH/2),
-                          new THREE.Vector3(0, this.height, this.FB_LENGTH/2))
+                          new THREE.Vector3(xa1, ya1, za1));
+      this.leg2.updateLeg(new THREE.Vector3(this.LR_LENGTH/2, 0, -this.FB_LENGTH/2),
+                          new THREE.Vector3(xa2, ya2, za2));
+      this.leg3.updateLeg(new THREE.Vector3(-this.LR_LENGTH/2, 0, -this.FB_LENGTH/2),
+                          new THREE.Vector3(xa3, ya3, za3));
+      //根据后端给出的pitch和roll来更新动平台, 由于构建运动平台，动平台的绕x轴的初始旋转值为Math.PI / 2
+      this.motionPlatform.rotation.x = this.motionPlatformInfo.pitch[dataNum - 1] + Math.PI / 2
+      this.motionPlatform.rotation.z = this.motionPlatformInfo.roll[dataNum - 1]
+      this.motionPlatform.y = this.motionPlatformInfo.updown[dataNum - 1] + this.CT
+
     }, 1000);
+    
     this.animate();
-    console.log(this.fixedPlatform.vertices);
   },
   
 }
