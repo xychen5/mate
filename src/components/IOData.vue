@@ -27,10 +27,10 @@
     <el-tab-pane label="output data" name="second">
       <el-raw :gutter="2">
         <el-col :span="12">
-          <div id="h1" style="width: 600px;height: 400px;"></div>
+          <div id="h1" style="width: 500px;height: 400px;"></div>
         </el-col>
         <el-col :span="12">
-          <div id="h2" style="width: 600px;height: 400px;"></div>
+          <div id="h2" style="width: 500px;height: 400px;"></div>
         </el-col>
       </el-raw>
       <el-raw :gutter="2">
@@ -75,7 +75,7 @@ import axios from 'axios'
             data: [name]
           },
           grid: {
-            left: '3%',
+            left: '12%',
             right: '12%',
             bottom: '3%',
             containLabel: true
@@ -151,11 +151,11 @@ import axios from 'axios'
         this.h1 = newH1
         this.h2 = newH2
         this.h3 = newH3
-        this.drawLine('wPitch', 'wPitch', this.xList, 'n * T', this.wPitch, 'pitch veclocity: rad/s')
-        this.drawLine('wRoll', 'wRoll', this.xList, 'n * T', this.wRoll, 'roll veclocity: rad/s')
-        this.drawLine('xAcc', 'xAcc', this.xList, 'n * T', this.xAcc, 'x accelarate veclocity: m/s^2')
-        this.drawLine('yAcc', 'yAcc', this.xList, 'n * T', this.yAcc, 'y accelarate veclocity: m/s^2')
-        this.drawLine('zAcc', 'zAcc', this.xList, 'n * T', this.zAcc, 'z accelarate veclocity: m/s^2')
+        this.drawLine('wPitch', 'wPitch', this.xList, 'n * T', this.wPitch, 'pitch : rad/s')
+        this.drawLine('wRoll', 'wRoll', this.xList, 'n * T', this.wRoll, 'roll : rad/s')
+        this.drawLine('xAcc', 'xAcc', this.xList, 'n * T', this.xAcc, 'x accelarate : m/s^2')
+        this.drawLine('yAcc', 'yAcc', this.xList, 'n * T', this.yAcc, 'y accelarate : m/s^2')
+        this.drawLine('zAcc', 'zAcc', this.xList, 'n * T', this.zAcc, 'z accelarate : m/s^2')
         this.drawLine('h1', 'h1', this.xList, 'n * T', this.h1, 'the front cylinder\'s height change: mm')
         this.drawLine('h2', 'h2', this.xList, 'n * T', this.h2, 'the left behind cylinder\'s height change: mm')
         this.drawLine('h3', 'h3', this.xList, 'n * T', this.h3, 'the right behid cylinder\'s height change: mm')

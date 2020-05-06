@@ -1,10 +1,6 @@
 <template>
     <div>
-      <div id="container"></div>
-      <div id='log'>
-        <p> {{ tmp }} </p>
-        <p> {{ height }} </p>
-      </div>
+      <div id="container" style="height: 600px"></div>
     </div>
 </template>
  
@@ -215,10 +211,7 @@ export default {
     this.init();
     const getMotionPlatformInfoTimer = setInterval(() => {
       this.getMotionPlatformInof()
-      this.height += 0.01
-      // for (var i = 0; i < this.motionPlatformInfo.pitch.length; i++){
-        
-      // }
+      console.time("net and updat")
       //获取数据的个数，这里我们总是取最顶端的那个数据作为更新的数据
       var dataNum = this.motionPlatformInfo.xa1.length 
       console.log(this.motionPlatformInfo.xa1[dataNum - 1]);
@@ -247,7 +240,8 @@ export default {
       this.motionPlatform.rotation.x = this.motionPlatformInfo.pitch[dataNum - 1] + Math.PI / 2
       this.motionPlatform.rotation.z = this.motionPlatformInfo.roll[dataNum - 1]
       this.motionPlatform.y = this.motionPlatformInfo.updown[dataNum - 1] + this.CT
-
+      console.timeEnd("net and updat")
+      this.height += 0.01
     }, 1000);
     
     this.animate();
