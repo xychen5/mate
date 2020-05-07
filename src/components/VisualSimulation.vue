@@ -76,8 +76,8 @@ export default {
 
       this.camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.01, 1000);
       console.log(window.innerHeight, window.innerWidth);
-      this.camera.position.set(1, 1, 1);  //设置相机位置
-      this.camera.lookAt(new THREE.Vector3(0, 0, 0)); //设置相机的朝向
+      this.camera.position.set(0.4, 0.5, 0.1);  //设置相机位置
+      this.camera.lookAt(new THREE.Vector3(0, 0.15, 0)); //设置相机的朝向
 
       this.scene = new THREE.Scene();
 
@@ -170,9 +170,12 @@ export default {
     },
 
     animate: function() {
+      //怪异的是，three.js平移的时候为右手系，旋转的时候为左手系
       requestAnimationFrame(this.animate);
       // this.motionPlatform.rotation.x += 0.01;
-      // this.motionPlatform.rotation.y = 0.1;
+      // this.motionPlatform.rotation.y += 0.01;
+      // this.motionPlatform.rotation.z += 0.01
+      // this.motionPlatform.position.y += 0.0001
       this.renderer.render(this.scene, this.camera);
       // this.leg1.updateLeg()
     },
@@ -215,7 +218,7 @@ export default {
       //获取数据的个数，这里我们总是取最顶端的那个数据作为更新的数据
       var dataNum = this.motionPlatformInfo.xa1.length 
       console.log(this.motionPlatformInfo.xa1[dataNum - 1]);
-      //由于在前端，实现的动平台的前方面向为z轴，左右为x轴，上下为y轴，后端的前为x，左右为y，上下为z，同时前端坐标的尺度和后端不同
+      //由于在前端，实现的动平台的前方面向为y轴，左为x轴，上方向为z轴，为左手系，后端的前为x，左右为y，上下为z，同时前端坐标的尺度和后端不同
       //前端和后端大小的比例为： 0.28 : 560mm，后端的x为前端的z，后端的y为前端的x，后端的z为前端的y
       //动平台3个顶点，a1, a2, a3分别为前，左后，右后，且后端的坐标系建立在动平台上，前端建立在动平台上所以有以下坐标转化
       var scaleToFrontEnd = 0.28 / 560
@@ -236,10 +239,10 @@ export default {
                           new THREE.Vector3(xa2, ya2, za2));
       this.leg3.updateLeg(new THREE.Vector3(-this.LR_LENGTH/2, 0, -this.FB_LENGTH/2),
                           new THREE.Vector3(xa3, ya3, za3));
-      //根据后端给出的pitch和roll来更新动平台, 由于构建运动平台，动平台的绕x轴的初始旋转值为Math.PI / 2
+      //根据后端给出的pitch和roll来更新动平台, 由于构建运动平台，动平台的绕x轴的初始旋转值为Math.PI / 2,后端的updown单位为米
       this.motionPlatform.rotation.x = this.motionPlatformInfo.pitch[dataNum - 1] + Math.PI / 2
-      this.motionPlatform.rotation.z = this.motionPlatformInfo.roll[dataNum - 1]
-      this.motionPlatform.y = this.motionPlatformInfo.updown[dataNum - 1] + this.CT
+      this.motionPlatform.rotation.y = this.motionPlatformInfo.roll[dataNum - 1]
+      this.motionPlatform.position.y = this.motionPlatformInfo.updown[dataNum - 1] * scaleToFrontEnd + this.CT
       console.timeEnd("net and updat")
       this.height += 0.01
     }, 1000);
